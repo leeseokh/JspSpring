@@ -1,0 +1,85 @@
+@charset "utf-8";
+body{
+	margin:0px;
+	font-size:16px;
+}
+#box{
+	position:relative;
+	height:auto;
+	width:100%;
+	margin:auto;
+/* 	background-color:#F90; */
+}
+#top {
+	height:300px;
+	position:relative;
+	padding:20px 20px 10px 20px;
+/* 	background-color:blue; */
+}
+#left{
+	height:350px;
+	width:45%;
+	position:relative;
+	padding:20px 20px 10px 20px;
+/* 	background-color:#09C; */
+	float:left;
+}
+#right{
+	height:350px;
+	width:48%;
+	position:relative;
+	padding:20px 20px 10px 20px;
+/* 	background-color:#3C0; */
+	float:left;
+}
+#bottom{
+	height:100px;
+	width:100%;
+	position:relative;
+	padding:10px 10px 0px 20px;
+	clear:both;
+	/* background-color:#F90; */
+}
+input[type="text"],
+input[type="password"] {
+  padding: 3px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  border: 1px solid #000;
+  outline: none;
+  width:98%;
+  height:30px;
+}
+th {
+	background-color:#F2F2F2;
+}
+.container1 {
+  overflow: auto;
+}
+/* 스크롤바 자체 */
+.container1::-webkit-scrollbar {
+  width: 10px;
+}
+/* thumb : 움직이는 스크롤바 */
+.container1::-webkit-scrollbar-thumb {
+  background-color: #2f3542;
+  border-radius: 10px;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+/* track : 움직이는 스크롤바 이외의 영역 */
+.container1::-webkit-scrollbar-track {
+  background-color: grey;
+  border-radius: 10px;
+  box-shadow: inset 0px 0px 5px white;
+}
+
+
+
+
+
+
+
+
+

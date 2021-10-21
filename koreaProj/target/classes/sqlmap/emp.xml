@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="emp">
+	<!-- emp(직원) 테이블로 insert -->
+	<insert id="insert" parameterType="empVo">
+		<selectKey order="BEFORE" keyProperty="empNum" resultType="int">
+		SELECT NVL(MAX(EMP_NUM),0)+1 FROM EMP
+		</selectKey>
+		<![CDATA[
+		INSERT INTO EMP(EMP_NUM,EMP_NM,ZIP_CODE,ADDR1,ADDR2,PHN_NUM,POS,DEPT_NM)
+		VALUES(#{empNum},#{empNm},#{zipCode},#{addr1},#{addr2},#{phnNum},#{pos},#{deptNm})
+		]]>
+	</insert>
+</mapper>

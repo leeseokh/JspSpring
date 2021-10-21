@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chart">
+	<select id="cartMoney" resultType="hashMap">
+		SELECT A.PROD_ID
+		    , A.PROD_NAME as PRODNAME
+		    , SUM(A.PROD_SALE * B.CART_QTY) MONEY
+		FROM PROD A, CART B
+		WHERE 1=1
+		AND A.PROD_ID = B.CART_PROD
+		GROUP BY A.PROD_ID, A.PROD_NAME
+		HAVING SUM(A.PROD_SALE * B.CART_QTY) >= 10000000
+	</select>
+</mapper>

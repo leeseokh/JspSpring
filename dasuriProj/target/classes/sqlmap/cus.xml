@@ -1,0 +1,138 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.cus.mapper.CusMapper">
+	
+	<resultMap id="cusMap" type="cusVo">
+		<result column="ZIPCODE" property="zipcode" />
+		<result column="CUS_NUM" property="cusNum" />
+		<result column="CUS_NM" property="cusNm" />
+		<result column="ADDR1" property="addr1" />
+		<result column="PNE" property="pne" />
+		<result column="PWD" property="pwd" />
+		<result column="CUS_DETAIL" property="cusDetail" jdbcType="CLOB" javaType="java.lang.String" />
+		<result column="CUS_IMAGE" property="cusImageUpload" />
+		<result column="ADDR2" property="addr2" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="cusVo">
+		<selectKey keyProperty="cusNum" order="BEFORE" resultType="int" >
+			SELECT NVL(MAX(cus_num), 0) + 1 FROM cus
+		</selectKey>
+		INSERT INTO cus (cus_num, cus_nm, zipcode, addr1, addr2, pne, pwd, cus_detail, cus_image)
+		VALUES
+		(
+		    #{cusNum}
+		    ,#{cusNm}
+		    ,#{zipcode}
+		    ,#{addr1}
+		    ,#{addr2}
+		    ,#{pne}
+		    ,#{pwd}
+		    ,#{cusDetail}
+		    ,#{cusImageUpload}
+		)
+	</insert>
+	
+	<!-- 고객(CUS)정보 상세보기 -->
+	<select id="detail" parameterType="String" resultMap="cusMap">
+		SELECT CUS_NUM, CUS_NM, ZIPCODE, ADDR1, ADDR2, PNE, PWD, CUS_DETAIL, CUS_IMAGE
+		FROM   CUS
+		WHERE  CUS_NUM = #{cusNum}
+	</select>
+	
+	<!-- 고객(CUS)정보 변경 -->
+	<update id="update">
+		UPDATE CUS
+		SET    CUS_NM = #{cusNm}, ZIPCODE = #{zipcode}, ADDR1 = #{addr1}, ADDR2 = #{addr2},
+			   PNE = #{pne}, CUS_DETAIL = #{cusDetail}
+		WHERE  CUS_NUM = #{cusNum}
+	</update>
+	
+	<!-- 고객(CUS)정보 변경(고객의 이미지 포함) -->
+	<update id="updateWithImage">
+		UPDATE CUS
+		SET    CUS_NM = #{cusNm}, ZIPCODE = #{zipcode}, ADDR1 = #{addr1}, ADDR2 = #{addr2},
+			   PNE = #{pne}, CUS_DETAIL = #{cusDetail}, CUS_IMAGE = #{cusImageUpload}
+		WHERE  CUS_NUM = #{cusNum}
+	</update>
+	
+	<!-- 고객(CUS) 정보 목록 -->
+	<select id="selectCusList" parameterType="hashMap" resultType="cusVo">	
+		SELECT T.* 
+		FROM (
+		    SELECT ROW_NUMBER() OVER(ORDER BY CUS_NUM DESC) RNUM,
+			    CUS_NUM,
+			    CUS_NM,
+			    ZIPCODE,
+			    ADDR1,
+			    ADDR2,
+			    PNE,
+			    CUS_DETAIL,
+			    PWD
+			FROM CUS
+			WHERE 1 = 1
+			<choose>
+				<when test="selSearch=='' and selSearch.equals('')">
+					AND CUS_NM || ADDR1 || ADDR2 || PNE LIKE '%' || #{keyword} || '%'
+				</when>
+				<otherwise>
+					<if test="selSearch!='' and selSearch.equals('cusNm')">
+						AND   CUS_NM LIKE '%' || #{keyword} || '%'
+					</if>
+					<if test="selSearch!='' and selSearch.equals('addr')">
+					AND   ADDR1 || ADDR2 LIKE '%' || #{keyword} || '%'
+					</if>
+					<if test="selSearch!='' and selSearch.equals('pne')">
+					AND   PNE LIKE '%' || #{keyword} || '%'
+					</if>
+				</otherwise>
+			</choose>
+		) T
+		WHERE T.RNUM BETWEEN #{currentPage} * 15 - 14 AND #{currentPage} * 15				
+	</select>
+	
+	<!-- 고객(CUS) 인원수 -->
+	<select id="cusTotal" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*)
+		FROM CUS
+		WHERE 1 = 1
+			<choose>
+				<when test="selSearch=='' and selSearch.equals('')">
+					AND CUS_NM || ADDR1 || ADDR2 || PNE LIKE '%' || #{keyword} || '%'
+				</when>
+				<otherwise>
+					<if test="selSearch!='' and selSearch.equals('cusNm')">
+						AND   CUS_NM LIKE '%' || #{keyword} || '%'
+					</if>
+					<if test="selSearch!='' and selSearch.equals('addr')">
+					AND   ADDR1 || ADDR2 LIKE '%' || #{keyword} || '%'
+					</if>
+					<if test="selSearch!='' and selSearch.equals('pne')">
+					AND   PNE LIKE '%' || #{keyword} || '%'
+					</if>
+				</otherwise>
+			</choose>
+	</select>
+	
+	<!-- 고객(CUS) 정보 삭제 -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM CUS
+		WHERE  CUS_NUM = #{cusNum}
+	</delete>
+	
+	<!-- 특정 고객이 소유하고 있는 자동차 댓수 -->
+	<select id="selectCountCar" parameterType="String" resultType="int">
+		SELECT COUNT(*) CNT
+		FROM   CAR
+		WHERE  CUS_NUM = #{cusNum}
+	</select>
+	
+	
+	
+	
+</mapper>
+
+
+
+
+
+

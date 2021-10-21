@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sitemat">
+	<resultMap id="siteMatJoin" type="hashMap">
+	  <result property="siteNum" column="SITE_NUM" />
+      <result property="siteNm" column="SITE_NM" />
+      <result property="matNmCd" column="MAT_NM_CD" />
+      <result property="itemNm" column="ITEM_NM" />
+      <result property="cnt" column="CNT" />
+      <result property="purPri" column="PUR_PRI" />
+      <result property="purDt" column="PUR_DT" />
+	</resultMap>
+	
+	<!-- SITE_MAT테이블에 insert -->
+	<insert id="insert" parameterType="siteMatVo">
+	MERGE INTO SITE_MAT A
+	USING DUAL 
+	ON(A.SITE_NUM = #{siteNum} AND A.MAT_NM_CD = #{matNmCd})
+	WHEN MATCHED THEN
+	    UPDATE SET A.CNT = A.CNT + #{cnt}
+	WHEN NOT MATCHED THEN
+	    INSERT (SITE_NUM, MAT_NM_CD, CNT, PUR_PRI, PUR_DT)
+	    VALUES(#{siteNum},#{matNmCd},#{cnt},#{purPri},#{purDt})   
+	</insert>
+	
+	<!-- 건설 자재 정보 select -->
+	<select id="selectConMatInfo" resultType="hashMap">
+	SELECT MAT_NM_CD
+	     , ITEM_NM
+	FROM   CON_MAT_INFO
+	</select>
+	
+	<!-- 사업장 검색 창에서 사용되는 사업장 검색 쿼리 -->
+	<!-- map : {siteNm=대전}  -->
+	<select id="selectSiteList" parameterType="hashMap" resultType="siteVo">
+	SELECT SITE_NUM,SITE_NM,ADDR,PHN_NUM,CONT_AMT,
+		   IN_PEO,ST_DT,EX_COM_DT,ETC 
+	FROM SITE
+	WHERE 1 = 1
+	<if test="siteNm != null or siteNm != ''">
+		<![CDATA[
+		AND SITE_NM LIKE '%' || #{siteNm} || '%'
+		]]>
+	</if>
+	</select>
+	
+	<!-- 사업장 자재 목록 -->
+	<!-- map : {caseWhere=siteNm, keyword=대전} -->
+	<select id="siteMatList" parameterType="hashMap" resultMap="siteMatJoin">
+		SELECT A.SITE_NUM
+		     , B.SITE_NM
+		     , A.MAT_NM_CD
+		     , C.ITEM_NM
+		     , A.CNT
+		     , A.PUR_PRI
+		     , A.PUR_DT
+		FROM   SITE_MAT A, SITE B, CON_MAT_INFO C
+		WHERE  A.SITE_NUM = B.SITE_NUM
+		AND    A.MAT_NM_CD = C.MAT_NM_CD
+		<if test="keyword != null and keyword != ''">
+			<choose>
+				<when test="caseWhere=='all'">
+				AND (C.ITEM_NM LIKE '%' || #{keyword} || '%' OR B.SITE_NM LIKE '%' || #{keyword} || '%')
+				</when>
+				<when test="caseWhere=='siteNm'">
+				AND B.SITE_NM LIKE '%' || #{keyword} || '%'
+				</when>
+				<when test="caseWhere=='itemNm'">
+				AND C.ITEM_NM LIKE '%' || #{keyword} || '%'
+				</when>
+				<otherwise>
+				AND 1 = 1
+				</otherwise>
+			</choose>
+		</if>
+	</select>
+</mapper>
+
+
+

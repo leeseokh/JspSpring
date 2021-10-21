@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="emp">
+	<!-- EMP 테이블에 insert -->
+	<insert id="insert" parameterType="empVo">
+	<selectKey order="BEFORE" keyProperty="empNum" resultType="int">
+	SELECT NVL(MAX(EMP_NUM),TO_CHAR(SYSDATE,'YYYYMM')||'000') + 1
+	FROM   EMP
+	WHERE  SUBSTR(EMP_NUM,1,6) = TO_CHAR(SYSDATE,'YYYYMM')
+	</selectKey>
+	INSERT INTO EMP(EMP_NUM, NM, ADDR, PNE, SAL)
+	VALUES(
+	#{empNum},#{nm},#{addr},#{pne},#{sal})
+	</insert>
+	
+	<!-- 직원번호(empNum)를 조건으로 하여 직원정보를 empVo에 담아서 리턴해줌 -->
+	<select id="selectEmp" parameterType="String" resultType="empVo">
+	SELECT EMP_NUM, NM, ADDR, PNE, SAL FROM EMP
+	WHERE  EMP_NUM = #{empNum}
+	</select>
+	
+	<!-- 직원번호(empNum)를 조건으로 하여 empVo에 담긴 대로 직원정보를 update 함 -->
+	<update id="update" parameterType="empVo">
+	UPDATE EMP
+	SET    NM=#{nm}, ADDR=#{addr}, PNE=#{pne}, SAL=#{sal}
+	WHERE  EMP_NUM = #{empNum}
+	</update>
+	
+	<!-- 직원번호(String empNum)를 조건으로 하여 해당직원의 데이터 삭제 -->
+	<delete id="delete" parameterType="String">
+	DELETE FROM EMP
+	WHERE  EMP_NUM = #{empNum}
+	</delete>
+	
+	<!-- 직원 목록 가져오기. 파라미터 : currentPage -->
+	<select id="selectEmpList" parameterType="String" resultType="empVo">
+	SELECT T.*
+	FROM
+	(
+	SELECT ROW_NUMBER() OVER (ORDER BY EMP_NUM DESC) RNUM,
+	EMP_NUM, NM, ADDR, PNE, SAL
+	FROM   EMP
+	) T
+	WHERE T.RNUM BETWEEN #{currentPage}*10-9 AND #{currentPage}*10
+	</select>
+	
+	<!-- emp테이블의 전체 행의 수 -->
+	<select id="empTotal" resultType="int">
+	SELECT COUNT(*) AS CNT
+	FROM   EMP
+	</select>
+	
+	<!-- 직원(EMP) 및 고객(CUS) 로그인 -->
+	<select id="login" parameterType="empVo" resultType="empVo">
+	WITH T AS(
+	SELECT EMP_NUM, NM, ADDR, PNE, SAL, PWD, ADMIN_YN
+	FROM   EMP
+	UNION
+	SELECT CUS_NUM, CUS_NM, ZIPCODE || ' ' || ADDR1 || ' ' || ADDR2, PNE, 0, PWD, ''
+	FROM   CUS)
+	SELECT T.EMP_NUM, T.NM, T.ADDR, T.PNE, T.SAL, T.PWD, T.ADMIN_YN FROM T
+	WHERE  T.EMP_NUM = #{empNum} AND T.PWD = PKG_CRYPTO.ENCRYPT(#{pwd})
+	</select>
+	
+	<!-- 모든 직원 목록 가져오기. -->
+	<select id="selectEmpAllList" resultType="empVo">
+	SELECT T.*
+	FROM
+	(
+	SELECT ROW_NUMBER() OVER (ORDER BY EMP_NUM DESC) RNUM,
+	EMP_NUM, NM, ADDR, PNE, SAL
+	FROM   EMP
+	) T
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,61 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.freeboard.mapper.FreeboardMapper">
+	<resultMap id="reMap" type="freeboardVo">
+		<result property="num" column="NUM" />
+		<result property="writer" column="WRITER" />
+		<result property="pNum" column="P_NUM" />
+		<result property="content" column="CONTENT" jdbcType="CLOB" javaType="java.lang.String" />
+	</resultMap>
+
+	<select id="list" resultType="freeboardVo">
+	SELECT ROWNUM RNUM
+     , T.LVL, T.NUM, T.TITLE, T.WRITER, T.P_NUM
+	FROM 
+	(
+	    SELECT LEVEL LVL
+	         , NUM
+	         , LPAD(' ', 2*(LEVEL-1)) || TITLE AS TITLE
+	         , WRITER
+	         , P_NUM
+	    FROM   FREEBOARD
+	    START WITH P_NUM IS NULL
+	    CONNECT BY PRIOR NUM = P_NUM
+	) T
+	</select>
+	<!-- 상세글 보기. detail?rnum=3 -->
+	<select id="detail" parameterType="String" resultType="freeboardVo">
+		SELECT NUM, TITLE, WRITER, P_NUM, CONTENT, ATTACH as attachPath
+		FROM   FREEBOARD
+		WHERE  NUM = #{rnum}
+	</select>
+	<!-- 자유게시글 업데이트 -->
+	<update id="update" parameterType="freeboardVo">
+		UPDATE FREEBOARD
+		SET    TITLE = #{title}, CONTENT = #{content}, ATTACH = #{attachPath}
+		WHERE  NUM = #{num}
+	</update>
+	<!-- 댓글 insert -->
+	<insert id="reInsert" parameterType="freeboardVo">
+		<selectKey keyProperty="num" resultType="int" order="BEFORE">
+			SELECT NVL(MAX(NUM),0) + 1 FROM FREEBOARD
+		</selectKey>
+	
+		INSERT INTO FREEBOARD(NUM, TITLE, WRITER, P_NUM, CONTENT)
+		VALUES(#{num}, #{content}, #{writer}, #{pNum}, #{content})
+	</insert>
+	
+	<!-- 댓글 목록 / 파라미터 : pNum-->
+	<select id="reList" parameterType="String" resultMap="reMap">
+		SELECT NUM, WRITER, P_NUM, CONTENT
+		FROM   FREEBOARD
+		WHERE  P_NUM = #{pNum}
+	</select>
+</mapper>
+
+
+
+
+
+
+
+

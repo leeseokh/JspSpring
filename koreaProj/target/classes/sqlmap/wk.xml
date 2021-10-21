@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wk">
+	<!-- 근무 테이블(WK)에 데이터 입력 -->
+	<insert id="insert" parameterType="wkVo">
+	INSERT INTO WK(EMP_NUM, SITE_NUM, WK_START_DT)
+	VALUES(#{empNum},#{siteNum},#{wkStartDt})
+	</insert>
+	
+	<!-- 사원 정보 목록 -->
+	<!-- //map : {"currentPage","3"} -->
+	<select id="selectEmpList" parameterType="hashMap" resultType="empVo">
+	SELECT T.*
+	FROM 
+	(
+	    SELECT ROW_NUMBER() OVER (ORDER BY EMP_NUM DESC) RNUM
+	         , EMP_NUM,EMP_NM,ZIP_CODE,ADDR1,ADDR2,PHN_NUM,POS,DEPT_NM
+	    FROM   EMP
+	) T
+	WHERE T.RNUM BETWEEN #{currentPage} * 3 - 2 AND #{currentPage} * 3
+	</select>
+	
+	<!-- 사원 상세 정보  -->
+	<select id="selectEmpDetail" parameterType="int" resultType="empVo">
+	SELECT EMP_NUM,EMP_NM,ZIP_CODE,ADDR1,ADDR2,PHN_NUM,POS,DEPT_NM
+	FROM   EMP
+	WHERE  EMP_NUM = #{empNum} 	
+	</select>
+	
+	
+	<!-- 사업장 정보 목록 -->
+	<!-- siteMap.put("currentSitePage", currentSitePage); -->
+	<select id="selectSiteList" parameterType="hashMap" resultType="siteVo">
+	SELECT T.*
+	FROM 
+	(
+	    SELECT ROW_NUMBER() OVER(ORDER BY SITE_NUM DESC) RNUM,SITE_NUM,SITE_NM,
+	    ADDR,PHN_NUM,CONT_AMT,IN_PEO,ST_DT,EX_COM_DT,ETC
+	    FROM   SITE
+	) T
+	WHERE T.RNUM BETWEEN #{currentSitePage} * 3 - 2 AND #{currentSitePage} * 3
+	</select>
+	
+	<!-- 사원 정보 삭제 -->
+	<delete id="deleteEmp" parameterType="hashMap">
+	DELETE FROM EMP
+	WHERE EMP_NUM = #{empNum}
+	</delete>
+	
+	<!-- 특정 사원의 정보가 존재 하는지? -->
+	<select id="selectCheckWk" parameterType="hashMap" resultType="int">
+	SELECT COUNT(*) AS CNT FROM WK
+	WHERE EMP_NUM = #{empNum}
+	</select>
+	
+	<!-- 사업장 정보 삭제 -->
+	<delete id="deleteSite" parameterType="hashMap">
+	DELETE FROM SITE
+	WHERE SITE_NUM = #{siteNum}
+	</delete>
+	
+	<!-- 특정 사업장의 정보가 존재 하는지? -->
+	<select id="selectCheckSite" parameterType="hashMap" resultType="int">
+	SELECT COUNT(*) AS CNT FROM WK
+	WHERE SITE_NUM = #{siteNum}	
+	</select>
+
+	<!-- 사원의 모든 인원수 구하기 -->
+	<select id="selectCountEmp" resultType="int">
+	SELECT COUNT(*) AS CNT FROM EMP
+	</select>
+	
+	<!-- 사업장의 모든 인원수 구하기 -->
+	<select id="selectCountSite" resultType="int">
+	SELECT COUNT(*) AS CNT FROM SITE
+	</select>
+</mapper>
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="site">
+	<insert id="insert" parameterType="siteVo">
+		<selectKey order="BEFORE" keyProperty="siteNum" resultType="int">
+			SELECT NVL(MAX(SITE_NUM),TO_CHAR(SYSDATE,'YYYY')||'000') + 1
+			FROM   SITE
+			WHERE  SITE_NUM LIKE TO_CHAR(SYSDATE,'YYYY')||'%'
+		</selectKey>
+		INSERT INTO SITE(SITE_NUM,SITE_NM,ADDR,PHN_NUM,CONT_AMT,
+		IN_PEO,ST_DT,EX_COM_DT,ETC)
+		VALUES(#{siteNum},#{siteNm},#{addr},#{phnNum},#{contAmt},
+		#{inPeo},#{stDt},#{exComDt},#{etc})
+	</insert>
+</mapper>
